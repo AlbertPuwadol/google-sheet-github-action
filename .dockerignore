@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+QUICKSTART.md
+LICENSE
+
+# GitHub workflows
+.github
+
+# Build artifacts
+append-sheet
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Scripts
+setup.sh
+
+# Test files
+*_test.go
