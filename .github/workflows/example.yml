@@ -1,0 +1,30 @@
+name: Example - Append to Google Sheet
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_value:
+        description: 'Test value to append'
+        required: false
+        default: 'Test from workflow'
+
+jobs:
+  append-to-sheet:
+    runs-on: ubuntu-latest
+    name: Append row to Google Sheet
+    
+    steps:
+      - name: Append row with service account
+        uses: AlbertPuwadol/google-sheet-github-action@main
+        with:
+          spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
+          sheet_name: 'Sheet1'
+          values: '["${{ github.run_number }}", "${{ github.event.inputs.test_value || 'Auto test' }}", "${{ github.actor }}", "${{ github.event_name }}"]'
+          auth_type: 'service_account'
+          credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+      
+      - name: Print result
+        run: |
+          echo "Updated range: ${{ steps.append.outputs.updated_range }}"
+          echo "Updated rows: ${{ steps.append.outputs.updated_rows }}"
+

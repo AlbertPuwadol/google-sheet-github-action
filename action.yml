@@ -1,0 +1,42 @@
+name: 'Google Sheets Append Row'
+description: 'Append a row to a Google Sheet using service account or OAuth token'
+author: 'AlbertPuwadol'
+
+branding:
+  icon: 'file-plus'
+  color: 'green'
+
+inputs:
+  spreadsheet_id:
+    description: 'The ID of the Google Spreadsheet (found in the URL)'
+    required: true
+  
+  sheet_name:
+    description: 'The name of the sheet/tab within the spreadsheet (default: Sheet1)'
+    required: false
+    default: 'Sheet1'
+  
+  values:
+    description: 'JSON array of values to append as a row, e.g., ["value1", "value2", 123]'
+    required: true
+  
+  auth_type:
+    description: 'Authentication type: "service_account" or "oauth" (default: service_account)'
+    required: false
+    default: 'service_account'
+  
+  credentials:
+    description: 'For service_account: Full JSON credentials. For oauth: Access token string'
+    required: true
+
+outputs:
+  updated_range:
+    description: 'The A1 notation of the range that was updated'
+  
+  updated_rows:
+    description: 'Number of rows that were updated'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+

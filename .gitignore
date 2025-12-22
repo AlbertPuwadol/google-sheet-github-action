@@ -8,8 +8,33 @@
 # Test binary, built with `go test -c`
 *.test
 
-# Output of the go coverage tool, specifically when used with LiteIDE
+# Output of the go coverage tool
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Credentials (never commit these!)
+credentials.json
+service-account.json
+*-credentials.json
+*-service-account.json
+
+# But DO commit go.sum (not excluded here)
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+/append-sheet
