@@ -95,13 +95,25 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
    - Give it "Editor" permission
 
 6. **Add to GitHub Secrets**
+
    - Go to your GitHub repository
    - Navigate to Settings > Secrets and variables > Actions
+
+   **Add Service Account Credentials:**
+
    - Click "New repository secret"
    - Name: `GOOGLE_SERVICE_ACCOUNT_JSON`
-   - Value: Paste the entire contents of the JSON file
+   - Value: Open the JSON file in a text editor, select ALL content (Ctrl+A/Cmd+A), and paste
+   - ⚠️ **Important:** Make sure you copy the entire JSON including `{` and `}`, with no extra spaces at the beginning or end
+   - Click "Add secret"
+
+   **Add Spreadsheet ID:**
+
+   - Click "New repository secret"
    - Name: `SPREADSHEET_ID`
    - Value: The ID from your Google Sheets URL (the long string between `/d/` and `/edit`)
+   - Example: In `https://docs.google.com/spreadsheets/d/1abc...xyz/edit`, the ID is `1abc...xyz`
+   - Click "Add secret"
 
 ### Option 2: OAuth Token Authentication
 
@@ -212,10 +224,30 @@ values: '["Deployment", "${{ github.sha }}", "${{ github.event.repository.full_n
 - Make sure you've shared the Google Sheet with the service account email
 - Verify the service account has "Editor" permission
 
-### Invalid Credentials
+### Invalid Credentials / Invalid Header Field Value
 
-- Check that the JSON is properly formatted in GitHub Secrets
-- Ensure the entire JSON content is copied without truncation
+This error can occur if credentials are not properly formatted:
+
+**For Service Account (JSON):**
+
+- Open the downloaded JSON file in a text editor
+- Copy the **entire** contents (including opening `{` and closing `}`)
+- Paste directly into GitHub Secrets - do not add extra spaces or newlines
+- The JSON should start with `{` and end with `}`
+- Make sure there are no trailing spaces or formatting issues
+
+**For OAuth Token:**
+
+- Ensure the token is a single line with no spaces or newlines
+- The token should be just the access token string, nothing else
+- Common issue: copying the token with quotes or extra whitespace
+
+**Quick fix:**
+
+- Delete and recreate the secret in GitHub
+- Use `cat credentials.json | pbcopy` (Mac) or `cat credentials.json | xclip` (Linux) to copy the exact file contents
+- Paste directly into GitHub Secrets without any modification
+- **Tip:** Run `./validate-credentials.sh your-credentials.json` to verify your credentials file before adding to GitHub
 
 ### Spreadsheet Not Found
 
