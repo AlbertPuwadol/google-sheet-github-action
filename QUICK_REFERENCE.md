@@ -48,39 +48,11 @@
 
 **Requires:** GitHub Organization plan
 
----
-
-### 3️⃣ Repository Secrets (Standard)
-
-**Add secrets to each repository individually**
-
-```yaml
-- uses: AlbertPuwadol/google-sheet-github-action@main
-  with:
-    spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
-    credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
-    sheet_name: "Logs"
-    values: '["data"]'
-```
-
-**Setup:** Settings → Secrets and variables → Actions
-
----
-
-## 📊 Comparison
-
-| Method                | Setup Once | Use Everywhere | GitHub Org Required | Best For        |
-| --------------------- | ---------- | -------------- | ------------------- | --------------- |
-| Reusable Workflow     | ✅         | ✅             | ❌                  | Multiple repos  |
-| Organization Secrets  | ✅         | ✅             | ✅                  | Teams           |
-| Repository Secrets    | ❌         | ❌             | ❌                  | Single repo     |
-| Environment Variables | ❌         | ❌             | ❌                  | Per-repo config |
-
 ## 🎯 Recommendations
 
-- **👥 Multiple repos, no GitHub Org:** Use **Reusable Workflow** (#1)
-- **🏢 GitHub Organization:** Use **Organization Secrets** (#2)
-- **📦 Single repository:** Use **Repository Secrets** (#3)
+- **🏢 GitHub Organization:** Use **Organization Secrets**
+- **📦 Single repository:** Use **Repository Secrets**
+- **👥 Multiple repos:** Use **Organization Secrets** or copy secrets to each repo
 
 ## 🔐 Authentication Types
 
