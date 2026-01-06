@@ -2,7 +2,7 @@
 
 A GitHub Action that appends a row to a Google Sheet using the official Google Sheets API. Written in Go using the [google-api-go-client](https://github.com/googleapis/google-api-go-client) library.
 
-📖 **[Quick Reference](QUICK_REFERENCE.md)** | 🔐 **[Centralized Credentials](CENTRALIZED_CREDENTIALS.md)** | 🔑 **[OAuth Setup](OAUTH_SETUP.md)**
+📖 **[Quick Reference](QUICK_REFERENCE.md)** | 🔑 **[OAuth Setup](OAUTH_SETUP.md)**
 
 ## Features
 
@@ -14,7 +14,6 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 - ✅ Multiple credential storage options:
   - **GitHub Secrets** (per-repository)
   - **Organization Secrets** (shared across repos)
-  - **Reusable Workflow** (centralized credentials) 🆕
 - ✅ Easy to use from any GitHub repository
 - ✅ Built with Go for fast execution
 - ✅ Outputs updated range and row count
@@ -24,27 +23,6 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 ### 🎯 Quick Start: Reusable Workflow (Centralized Credentials)
 
 **Store credentials once, use from any repository!**
-
-In any repository, create `.github/workflows/log-to-sheet.yml`:
-
-```yaml
-name: Log to Google Sheet
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  log:
-    uses: AlbertPuwadol/google-sheet-github-action/.github/workflows/reusable-append-row.yml@main
-    with:
-      sheet_name: "Activity Log"
-      values: '["${{ github.repository }}", "${{ github.sha }}", "${{ github.actor }}"]'
-```
-
-**📖 Setup Guide:** [CENTRALIZED_CREDENTIALS.md](CENTRALIZED_CREDENTIALS.md)
-
----
 
 ### Basic Example (Service Account)
 
