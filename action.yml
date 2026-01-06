@@ -7,6 +7,10 @@ branding:
   color: 'green'
 
 inputs:
+  spreadsheet_id:
+    description: 'The ID of the Google Spreadsheet (found in the URL). Should be from secrets: ${{ secrets.SPREADSHEET_ID }}'
+    required: true
+  
   sheet_name:
     description: 'The name of the sheet/tab within the spreadsheet (default: Sheet1)'
     required: false
@@ -17,17 +21,21 @@ inputs:
     required: true
   
   auth_type:
-    description: 'Authentication type: "service_account" or "oauth" (default: service_account)'
+    description: 'Authentication type: "service_account", "oauth", or "oauth_refresh_token" (default: service_account)'
     required: false
     default: 'service_account'
-    
-  spreadsheet_id:
-    description: 'The ID of the Google Spreadsheet (found in the URL)'
-    required: true
   
   credentials:
-    description: 'For service_account: Full JSON credentials. For oauth: Access token string'
+    description: 'For service_account: Full JSON credentials. For oauth: Access token. For oauth_refresh_token: Refresh token. Should be from secrets.'
     required: true
+  
+  oauth_client_id:
+    description: 'OAuth Client ID (required only for oauth_refresh_token auth type). Should be from secrets: ${{ secrets.OAUTH_CLIENT_ID }}'
+    required: false
+  
+  oauth_client_secret:
+    description: 'OAuth Client Secret (required only for oauth_refresh_token auth type). Should be from secrets: ${{ secrets.OAUTH_CLIENT_SECRET }}'
+    required: false
 
 outputs:
   updated_range:

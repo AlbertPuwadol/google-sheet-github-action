@@ -21,6 +21,8 @@ func main() {
 	values := os.Getenv("INPUT_VALUES")
 	authType := os.Getenv("INPUT_AUTH_TYPE")
 	credentials := os.Getenv("INPUT_CREDENTIALS")
+	oauthClientID := os.Getenv("INPUT_OAUTH_CLIENT_ID")
+	oauthClientSecret := os.Getenv("INPUT_OAUTH_CLIENT_SECRET")
 
 	// Validate inputs
 	if spreadsheetID == "" {
@@ -39,6 +41,22 @@ func main() {
 		log.Fatal("credentials is required")
 	}
 
+	// Validate OAuth refresh token inputs
+	if strings.ToLower(authType) == "oauth_refresh_token" {
+		if oauthClientID == "" {
+			log.Fatal("oauth_client_id is required for oauth_refresh_token auth type")
+		}
+		if oauthClientSecret == "" {
+			log.Fatal("oauth_client_secret is required for oauth_refresh_token auth type")
+		}
+	}
+
+	// Log configuration (sanitized)
+	log.Printf("Spreadsheet ID: %s", spreadsheetID)
+	log.Printf("Sheet Name: %s", sheetName)
+	log.Printf("Auth Type: %s", authType)
+	log.Printf("Credentials length: %d bytes", len(credentials))
+
 	// Parse values (expect JSON array)
 	var rowValues []interface{}
 	if err := json.Unmarshal([]byte(values), &rowValues); err != nil {
@@ -49,7 +67,7 @@ func main() {
 	ctx := context.Background()
 
 	// Create Sheets service based on auth type
-	srv, err := createSheetsService(ctx, authType, credentials)
+	srv, err := createSheetsService(ctx, authType, credentials, oauthClientID, oauthClientSecret)
 	if err != nil {
 		log.Fatalf("Failed to create Sheets service: %v", err)
 	}
@@ -92,8 +110,11 @@ func main() {
 	}
 }
 
-func createSheetsService(ctx context.Context, authType, credentials string) (*sheets.Service, error) {
+func createSheetsService(ctx context.Context, authType, credentials, clientID, clientSecret string) (*sheets.Service, error) {
 	var tokenSource oauth2.TokenSource
+
+	// Trim whitespace from credentials
+	credentials = strings.TrimSpace(credentials)
 
 	switch strings.ToLower(authType) {
 	case "service_account":
@@ -105,14 +126,53 @@ func createSheetsService(ctx context.Context, authType, credentials string) (*sh
 		tokenSource = creds.TokenSource
 
 	case "oauth":
-		// OAuth token authentication
+		// OAuth access token authentication
+		accessToken := strings.TrimSpace(credentials)
+		if accessToken == "" {
+			return nil, fmt.Errorf("OAuth access token cannot be empty")
+		}
+
 		token := &oauth2.Token{
-			AccessToken: credentials,
+			AccessToken: accessToken,
 		}
 		tokenSource = oauth2.StaticTokenSource(token)
 
+	case "oauth_refresh_token":
+		// OAuth refresh token authentication
+		refreshToken := strings.TrimSpace(credentials)
+		clientID = strings.TrimSpace(clientID)
+		clientSecret = strings.TrimSpace(clientSecret)
+
+		if refreshToken == "" {
+			return nil, fmt.Errorf("OAuth refresh token cannot be empty")
+		}
+		if clientID == "" {
+			return nil, fmt.Errorf("OAuth client ID is required for refresh token authentication")
+		}
+		if clientSecret == "" {
+			return nil, fmt.Errorf("OAuth client secret is required for refresh token authentication")
+		}
+
+		// Configure OAuth2
+		config := &oauth2.Config{
+			ClientID:     clientID,
+			ClientSecret: clientSecret,
+			Endpoint:     google.Endpoint,
+			Scopes:       []string{sheets.SpreadsheetsScope},
+		}
+
+		// Create token with refresh token
+		token := &oauth2.Token{
+			RefreshToken: refreshToken,
+		}
+
+		// This will automatically refresh the token when needed
+		tokenSource = config.TokenSource(ctx, token)
+
+		log.Println("Using OAuth refresh token authentication")
+
 	default:
-		return nil, fmt.Errorf("unsupported auth_type: %s (supported: service_account, oauth)", authType)
+		return nil, fmt.Errorf("unsupported auth_type: %s (supported: service_account, oauth, oauth_refresh_token)", authType)
 	}
 
 	// Create the Sheets service
