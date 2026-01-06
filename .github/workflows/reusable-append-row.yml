@@ -1,0 +1,83 @@
+name: Reusable Workflow - Append to Google Sheet
+
+on:
+    workflow_call:
+        inputs:
+            spreadsheet_id:
+                description: "Spreadsheet ID (optional if stored in action repo)"
+                required: false
+                type: string
+            sheet_name:
+                description: "Sheet name/tab"
+                required: false
+                type: string
+                default: "Sheet1"
+            values:
+                description: "JSON array of values to append"
+                required: true
+                type: string
+            use_action_repo_credentials:
+                description: "Use credentials stored in this action repository"
+                required: false
+                type: boolean
+                default: true
+
+        secrets:
+            # Optional: Caller can override with their own credentials
+            auth_type:
+                description: "Authentication type: service_account, oauth, oauth_refresh_token"
+                required: false
+            spreadsheet_id:
+                required: false
+            credentials:
+                required: false
+            oauth_client_id:
+                required: false
+            oauth_client_secret:
+                required: false
+
+        outputs:
+            updated_range:
+                description: "The A1 notation of the updated range"
+                value: ${{ jobs.append-row.outputs.updated_range }}
+            updated_rows:
+                description: "Number of rows updated"
+                value: ${{ jobs.append-row.outputs.updated_rows }}
+
+jobs:
+    append-row:
+        runs-on: ubuntu-latest
+        outputs:
+            updated_range: ${{ steps.append.outputs.updated_range }}
+            updated_rows: ${{ steps.append.outputs.updated_rows }}
+
+        steps:
+            - name: Checkout action repository
+              uses: actions/checkout@v4
+              with:
+                  repository: AlbertPuwadol/google-sheet-github-action
+                  ref: main
+
+            - name: Determine credentials source
+              id: creds
+              run: |
+                  if [ "${{ inputs.use_action_repo_credentials }}" = "true" ]; then
+                    echo "Using credentials from action repository config"
+                    echo "use_local_config=true" >> $GITHUB_OUTPUT
+                  else
+                    echo "Using credentials from caller repository"
+                    echo "use_local_config=false" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Append to Google Sheet
+              id: append
+              uses: ./
+              with:
+                  use_local_config: ${{ steps.creds.outputs.use_local_config }}
+                  spreadsheet_id: ${{ inputs.spreadsheet_id || secrets.spreadsheet_id }}
+                  sheet_name: ${{ inputs.sheet_name }}
+                  values: ${{ inputs.values }}
+                  auth_type: ${{ secrets.auth_type }}
+                  credentials: ${{ secrets.credentials }}
+                  oauth_client_id: ${{ secrets.oauth_client_id }}
+                  oauth_client_secret: ${{ secrets.oauth_client_secret }}
