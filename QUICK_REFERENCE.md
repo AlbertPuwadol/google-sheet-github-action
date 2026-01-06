@@ -187,7 +187,6 @@ jobs:
 
 1. Check secret name matches exactly (case-sensitive)
 2. Verify secret is set in correct location
-3. For reusable workflow, ensure `use_action_repo_credentials: true`
 
 ### Error: "Spreadsheet not found"
 

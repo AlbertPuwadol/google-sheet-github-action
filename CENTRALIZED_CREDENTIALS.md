@@ -33,7 +33,6 @@ jobs:
     with:
       sheet_name: "Deployments"
       values: '["${{ github.sha }}", "${{ github.actor }}", "${{ github.event.head_commit.message }}"]'
-      use_action_repo_credentials: true
 ```
 
 **Benefits:**
@@ -136,7 +135,6 @@ jobs:
     with:
       sheet_name: "Activity Log"
       values: '["${{ github.repository }}", "${{ github.sha }}", "${{ github.actor }}", "${{ github.event.head_commit.message }}"]'
-      use_action_repo_credentials: true
 ```
 
 **Step 2:** Push and test

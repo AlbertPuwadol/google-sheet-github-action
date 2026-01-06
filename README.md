@@ -40,7 +40,6 @@ jobs:
     with:
       sheet_name: "Activity Log"
       values: '["${{ github.repository }}", "${{ github.sha }}", "${{ github.actor }}"]'
-      use_action_repo_credentials: true
 ```
 
 **📖 Setup Guide:** [CENTRALIZED_CREDENTIALS.md](CENTRALIZED_CREDENTIALS.md)

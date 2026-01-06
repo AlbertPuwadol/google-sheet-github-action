@@ -24,7 +24,6 @@ jobs:
     with:
       sheet_name: "Logs"
       values: '["data1", "data2"]'
-      use_action_repo_credentials: true # Uses credentials from action repo!
 ```
 
 ### 2️⃣ **Organization Secrets** (For GitHub Organizations)

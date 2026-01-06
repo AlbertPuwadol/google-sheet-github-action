@@ -16,11 +16,6 @@ on:
                 description: "JSON array of values to append"
                 required: true
                 type: string
-            use_action_repo_credentials:
-                description: "Use credentials stored in this action repository"
-                required: false
-                type: boolean
-                default: true
 
         secrets:
             # Optional: Caller can override with their own credentials
@@ -58,22 +53,10 @@ jobs:
                   repository: AlbertPuwadol/google-sheet-github-action
                   ref: main
 
-            - name: Determine credentials source
-              id: creds
-              run: |
-                  if [ "${{ inputs.use_action_repo_credentials }}" = "true" ]; then
-                    echo "Using credentials from action repository config"
-                    echo "use_local_config=true" >> $GITHUB_OUTPUT
-                  else
-                    echo "Using credentials from caller repository"
-                    echo "use_local_config=false" >> $GITHUB_OUTPUT
-                  fi
-
             - name: Append to Google Sheet
               id: append
               uses: ./
               with:
-                  use_local_config: ${{ steps.creds.outputs.use_local_config }}
                   spreadsheet_id: ${{ inputs.spreadsheet_id || secrets.spreadsheet_id }}
                   sheet_name: ${{ inputs.sheet_name }}
                   values: ${{ inputs.values }}
