@@ -142,6 +142,9 @@ func main() {
 			defer f.Close()
 			fmt.Fprintf(f, "updated_range=%s\n", resp.Updates.UpdatedRange)
 			fmt.Fprintf(f, "updated_rows=%d\n", resp.Updates.UpdatedRows)
+			fmt.Fprintf(f, "existing_row_count=%d\n", existingRowCount)
+			fmt.Fprintf(f, "row_number=%d\n", nextRowNumber)
+			fmt.Fprintf(f, "total_rows=%d\n", totalRows)
 		}
 	}
 }
