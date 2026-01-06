@@ -8,7 +8,7 @@ branding:
 
 inputs:
   spreadsheet_id:
-    description: 'The ID of the Google Spreadsheet (found in the URL). Should be from secrets: ${{ secrets.SPREADSHEET_ID }}'
+    description: 'The ID of the Google Spreadsheet (found in the URL). Should be from secrets'
     required: true
   
   sheet_name:
@@ -30,11 +30,11 @@ inputs:
     required: true
   
   oauth_client_id:
-    description: 'OAuth Client ID (required only for oauth_refresh_token auth type). Should be from secrets: ${{ secrets.OAUTH_CLIENT_ID }}'
+    description: 'OAuth Client ID (required only for oauth_refresh_token auth type). Should be from secrets'
     required: false
   
   oauth_client_secret:
-    description: 'OAuth Client Secret (required only for oauth_refresh_token auth type). Should be from secrets: ${{ secrets.OAUTH_CLIENT_SECRET }}'
+    description: 'OAuth Client Secret (required only for oauth_refresh_token auth type). Should be from secrets'
     required: false
 
 outputs:
