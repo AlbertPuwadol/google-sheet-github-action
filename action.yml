@@ -43,6 +43,15 @@ outputs:
   
   updated_rows:
     description: 'Number of rows that were updated'
+  
+  existing_row_count:
+    description: 'Number of existing rows before append (only when read_existing_data is true)'
+  
+  row_number:
+    description: 'Row number where the data was added (only when read_existing_data is true)'
+  
+  total_rows:
+    description: 'Total number of rows after append (only when read_existing_data is true)'
 
 runs:
   using: 'docker'
