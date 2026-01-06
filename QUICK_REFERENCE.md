@@ -204,43 +204,64 @@ jobs:
 2. Ensure no extra spaces or newlines
 3. For JSON, copy entire file contents
 
-### Reusable workflow not working
+### Data length not showing
 
 **Solutions:**
 
-1. Check action repository is accessible
-2. Verify config file exists in action repo
-3. Ensure `@main` branch reference is correct
+1. Check action logs for "Reading existing data" message
+2. Verify sheet permissions allow reading
+3. Ensure outputs are accessed correctly in workflow
 
 ---
+
+## 📊 Key Features
+
+### Automatic Data Tracking
+
+The action automatically provides:
+
+- `existing_row_count` - Rows before append
+- `row_number` - Where data was added
+- `total_rows` - Total rows after append
+- `updated_range` - A1 notation (e.g., `Sheet1!A11:C11`)
+
+### Precise Range Notation
+
+Instead of generic `A:Z`, uses exact position like `A11:Z11` based on existing data.
 
 ## 📚 Full Documentation
 
 - **[README.md](README.md)** - Complete documentation
-- **[CENTRALIZED_CREDENTIALS.md](CENTRALIZED_CREDENTIALS.md)** - Reusable workflows & organization secrets
 - **[OAUTH_SETUP.md](OAUTH_SETUP.md)** - OAuth authentication setup
 
 ---
 
 ## 💡 Pro Tips
 
-1. **Use reusable workflow for multiple repos:**
-
-   - No secrets needed in each repo
-   - Update credentials in one place
-   - Perfect for microservices
-
-2. **Use organization secrets for teams:**
+1. **Use organization secrets for teams:**
 
    - Centralized management
    - Fine-grained access control
    - Audit logs
 
-3. **Separate sheets per environment:**
+2. **Use row tracking for sequential IDs:**
 
-   - Dev: `Dev-Logs`
-   - Staging: `Staging-Logs`
-   - Prod: `Production-Logs`
+   ```yaml
+   - id: log
+     uses: .../
+   - run: echo "Logged as entry #${{ steps.log.outputs.row_number }}"
+   ```
+
+3. **Monitor sheet capacity:**
+
+   ```yaml
+   - id: append
+     uses: .../
+   - run: |
+       if [ ${{ steps.append.outputs.total_rows }} -gt 1000 ]; then
+         echo "⚠️ Sheet is getting full!"
+       fi
+   ```
 
 4. **Add timestamps automatically:**
    ```yaml

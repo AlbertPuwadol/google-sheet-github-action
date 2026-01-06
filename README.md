@@ -7,6 +7,9 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 ## Features
 
 - ✅ Append rows to Google Sheets from GitHub Actions workflows
+- ✅ **Automatically reads existing data** to determine precise append position
+- ✅ **Logs data length information** (existing rows, new row number, total rows)
+- ✅ Uses precise range notation for accurate appends
 - ✅ Multiple authentication methods:
   - **Service Account** (recommended for automation)
   - **OAuth Access Token** (short-lived)
@@ -79,10 +82,49 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 
 ## Outputs
 
-| Output          | Description                                   |
-| --------------- | --------------------------------------------- |
-| `updated_range` | The A1 notation of the range that was updated |
-| `updated_rows`  | Number of rows that were updated              |
+| Output               | Description                                   |
+| -------------------- | --------------------------------------------- |
+| `updated_range`      | The A1 notation of the range that was updated |
+| `updated_rows`       | Number of rows that were updated              |
+| `existing_row_count` | Number of rows that existed before append     |
+| `row_number`         | The row number where the new data was added   |
+| `total_rows`         | Total number of rows after append             |
+
+## How It Works
+
+### Automatic Data Length Tracking
+
+The action automatically:
+
+1. **Reads existing data** from your Google Sheet
+2. **Counts the rows** to determine data length
+3. **Calculates the next row number** for precise appending
+4. **Uses specific range notation** (e.g., `Sheet1!A11:Z11` instead of `Sheet1!A:Z`)
+5. **Appends your data** at the exact position
+6. **Outputs all metrics** for your workflow to use
+
+**Console Output Example:**
+
+```
+📖 Reading existing data from sheet...
+📊 Existing data:
+  Total rows: 10
+  Next row number: 11
+  Columns in first row: 3
+  Appending to: Sheet1!A11:Z11
+📝 Appending row...
+
+✅ Successfully appended row!
+  Updated range: Sheet1!A11:C11
+  Updated rows: 1
+  Updated columns: 3
+  Updated cells: 3
+
+📊 Data length information:
+  Existing rows before append: 10
+  Row number where data added: 11
+  Total rows after append: 11
+```
 
 ## Authentication Methods Comparison
 
