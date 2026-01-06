@@ -117,12 +117,20 @@ func main() {
 		log.Fatalf("Failed to append row: %v", err)
 	}
 
+	// Calculate total rows after append
+	totalRows := existingRowCount + int(resp.Updates.UpdatedRows)
+
 	// Output results
-	fmt.Printf("Successfully appended row to %s\n", resp.TableRange)
-	fmt.Printf("Updated range: %s\n", resp.Updates.UpdatedRange)
-	fmt.Printf("Updated rows: %d\n", resp.Updates.UpdatedRows)
-	fmt.Printf("Updated columns: %d\n", resp.Updates.UpdatedColumns)
-	fmt.Printf("Updated cells: %d\n", resp.Updates.UpdatedCells)
+	fmt.Printf("\n✅ Successfully appended row!\n")
+	fmt.Printf("  Updated range: %s\n", resp.Updates.UpdatedRange)
+	fmt.Printf("  Updated rows: %d\n", resp.Updates.UpdatedRows)
+	fmt.Printf("  Updated columns: %d\n", resp.Updates.UpdatedColumns)
+	fmt.Printf("  Updated cells: %d\n", resp.Updates.UpdatedCells)
+
+	fmt.Printf("\n📊 Data length information:\n")
+	fmt.Printf("  Existing rows before append: %d\n", existingRowCount)
+	fmt.Printf("  Row number where data added: %d\n", nextRowNumber)
+	fmt.Printf("  Total rows after append: %d\n", totalRows)
 
 	// Set output for GitHub Actions
 	githubOutput := os.Getenv("GITHUB_OUTPUT")
