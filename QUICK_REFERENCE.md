@@ -1,27 +1,39 @@
 # Quick Reference Guide
 
-## 🚀 3 Ways to Use This Action
+## 🚀 Ways to Use This Action
 
-### 1️⃣ Reusable Workflow (Centralized Credentials) ⭐ EASIEST
+### 1️⃣ Repository Secrets (Standard)
 
-**Store credentials once in action repo, use from anywhere!**
+**Add secrets to repository and use in workflows**
 
 ```yaml
-jobs:
-  log:
-    uses: AlbertPuwadol/google-sheet-github-action/.github/workflows/reusable-append-row.yml@main
-    with:
-      sheet_name: "Logs"
-      values: '["data1", "data2"]'
+- name: Append to sheet
+  id: append
+  uses: AlbertPuwadol/google-sheet-github-action@main
+  with:
+    spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
+    credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+    sheet_name: "Logs"
+    values: '["data"]'
+
+- name: Show results
+  run: |
+    echo "Added to row: ${{ steps.append.outputs.row_number }}"
+    echo "Total rows: ${{ steps.append.outputs.total_rows }}"
 ```
 
-**No secrets needed in calling repository!**
+**Setup:** Settings → Secrets and variables → Actions
 
-📖 [Full Guide](CENTRALIZED_CREDENTIALS.md)
+**The action automatically:**
+
+- ✅ Reads existing data from the sheet
+- ✅ Determines next row number
+- ✅ Uses precise range notation
+- ✅ Logs data length information
 
 ---
 
-### 2️⃣ Organization Secrets (Best for Teams)
+### 2️⃣ Organization Secrets (For Teams)
 
 **Set up once in Organization → use in all repos**
 

@@ -19,26 +19,35 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
   - **Organization Secrets** (shared across repos)
 - ✅ Easy to use from any GitHub repository
 - ✅ Built with Go for fast execution
-- ✅ Outputs updated range and row count
+- ✅ Rich outputs: updated range, row count, existing rows, row number, total rows
 
 ## Usage
-
-### 🎯 Quick Start: Reusable Workflow (Centralized Credentials)
-
-**Store credentials once, use from any repository!**
 
 ### Basic Example (Service Account)
 
 ```yaml
 - name: Append row to Google Sheet
+  id: append
   uses: AlbertPuwadol/google-sheet-github-action@v1
   with:
-    spreadsheet_id: "YOUR_SPREADSHEET_ID"
+    spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
     sheet_name: "Sheet1"
     values: '["Column 1", "Column 2", "Column 3"]'
     auth_type: "service_account"
     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+
+- name: Show results
+  run: |
+    echo "Added to row: ${{ steps.append.outputs.row_number }}"
+    echo "Total rows: ${{ steps.append.outputs.total_rows }}"
 ```
+
+**The action automatically:**
+
+- Reads existing data from the sheet
+- Determines the next row number
+- Uses precise range notation (e.g., `Sheet1!A11:Z11`)
+- Logs all data length information
 
 ### OAuth Access Token Example
 
@@ -46,7 +55,7 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 - name: Append row to Google Sheet
   uses: AlbertPuwadol/google-sheet-github-action@v1
   with:
-    spreadsheet_id: "YOUR_SPREADSHEET_ID"
+    spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
     sheet_name: "Sheet1"
     values: '["Data 1", "Data 2", 123]'
     auth_type: "oauth"
@@ -269,6 +278,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Log to Google Sheet
+        id: log
         uses: AlbertPuwadol/google-sheet-github-action@v1
         with:
           spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
@@ -276,6 +286,12 @@ jobs:
           values: '["${{ github.sha }}", "${{ github.actor }}", "${{ github.event.head_commit.message }}", "${{ github.event.repository.updated_at }}"]'
           auth_type: "service_account"
           credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Create summary
+        run: |
+          echo "## 📋 Deployment Logged" >> $GITHUB_STEP_SUMMARY
+          echo "- **Row Number:** ${{ steps.log.outputs.row_number }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Deployments:** ${{ steps.log.outputs.total_rows }}" >> $GITHUB_STEP_SUMMARY
 ```
 
 ### Track Test Results
@@ -321,10 +337,13 @@ jobs:
     auth_type: "service_account"
     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
 
-- name: Print result
+- name: Print results with data tracking
   run: |
-    echo "Updated range: ${{ steps.append.outputs.updated_range }}"
-    echo "Updated rows: ${{ steps.append.outputs.updated_rows }}"
+    echo "✅ Data appended successfully!"
+    echo "📍 Row number: ${{ steps.append.outputs.row_number }}"
+    echo "📊 Previous rows: ${{ steps.append.outputs.existing_row_count }}"
+    echo "📈 Total rows: ${{ steps.append.outputs.total_rows }}"
+    echo "📋 Updated range: ${{ steps.append.outputs.updated_range }}"
 ```
 
 ## Values Format
