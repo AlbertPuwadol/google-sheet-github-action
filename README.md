@@ -2,15 +2,50 @@
 
 A GitHub Action that appends a row to a Google Sheet using the official Google Sheets API. Written in Go using the [google-api-go-client](https://github.com/googleapis/google-api-go-client) library.
 
+📖 **[Quick Reference](QUICK_REFERENCE.md)** | 🔐 **[Centralized Credentials](CENTRALIZED_CREDENTIALS.md)** | 🔑 **[OAuth Setup](OAUTH_SETUP.md)**
+
 ## Features
 
 - ✅ Append rows to Google Sheets from GitHub Actions workflows
-- ✅ Support for both **Service Account** and **OAuth** authentication
+- ✅ Multiple authentication methods:
+  - **Service Account** (recommended for automation)
+  - **OAuth Access Token** (short-lived)
+  - **OAuth Refresh Token** (long-lived, auto-refreshing)
+- ✅ Multiple credential storage options:
+  - **GitHub Secrets** (per-repository)
+  - **Organization Secrets** (shared across repos)
+  - **Reusable Workflow** (centralized credentials) 🆕
 - ✅ Easy to use from any GitHub repository
 - ✅ Built with Go for fast execution
 - ✅ Outputs updated range and row count
 
 ## Usage
+
+### 🎯 Quick Start: Reusable Workflow (Centralized Credentials)
+
+**Store credentials once, use from any repository!**
+
+In any repository, create `.github/workflows/log-to-sheet.yml`:
+
+```yaml
+name: Log to Google Sheet
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  log:
+    uses: AlbertPuwadol/google-sheet-github-action/.github/workflows/reusable-append-row.yml@main
+    with:
+      sheet_name: "Activity Log"
+      values: '["${{ github.repository }}", "${{ github.sha }}", "${{ github.actor }}"]'
+      use_action_repo_credentials: true
+```
+
+**📖 Setup Guide:** [CENTRALIZED_CREDENTIALS.md](CENTRALIZED_CREDENTIALS.md)
+
+---
 
 ### Basic Example (Service Account)
 
@@ -25,7 +60,7 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
     credentials: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
 ```
 
-### OAuth Example
+### OAuth Access Token Example
 
 ```yaml
 - name: Append row to Google Sheet
@@ -38,15 +73,32 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
     credentials: ${{ secrets.GOOGLE_OAUTH_TOKEN }}
 ```
 
+### OAuth Refresh Token Example (Recommended for OAuth)
+
+```yaml
+- name: Append row to Google Sheet
+  uses: AlbertPuwadol/google-sheet-github-action@v1
+  with:
+    spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
+    sheet_name: "Sheet1"
+    values: '["Data 1", "Data 2", 123]'
+    auth_type: "oauth_refresh_token"
+    credentials: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+    oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+    oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+```
+
 ## Inputs
 
-| Input            | Description                                                         | Required | Default           |
-| ---------------- | ------------------------------------------------------------------- | -------- | ----------------- |
-| `spreadsheet_id` | The ID of the Google Spreadsheet (found in the URL)                 | Yes      | -                 |
-| `sheet_name`     | The name of the sheet/tab within the spreadsheet                    | No       | `Sheet1`          |
-| `values`         | JSON array of values to append as a row                             | Yes      | -                 |
-| `auth_type`      | Authentication type: `service_account` or `oauth`                   | No       | `service_account` |
-| `credentials`    | For service_account: Full JSON credentials. For oauth: Access token | Yes      | -                 |
+| Input                 | Description                                                                                     | Required | Default           |
+| --------------------- | ----------------------------------------------------------------------------------------------- | -------- | ----------------- |
+| `spreadsheet_id`      | The ID of the Google Spreadsheet (found in the URL)                                             | Yes      | -                 |
+| `sheet_name`          | The name of the sheet/tab within the spreadsheet                                                | No       | `Sheet1`          |
+| `values`              | JSON array of values to append as a row                                                         | Yes      | -                 |
+| `auth_type`           | Authentication type: `service_account`, `oauth`, or `oauth_refresh_token`                       | No       | `service_account` |
+| `credentials`         | For service_account: Full JSON. For oauth: Access token. For oauth_refresh_token: Refresh token | Yes      | -                 |
+| `oauth_client_id`     | OAuth Client ID (required only for `oauth_refresh_token`)                                       | No       | -                 |
+| `oauth_client_secret` | OAuth Client Secret (required only for `oauth_refresh_token`)                                   | No       | -                 |
 
 ## Outputs
 
@@ -54,6 +106,27 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 | --------------- | --------------------------------------------- |
 | `updated_range` | The A1 notation of the range that was updated |
 | `updated_rows`  | Number of rows that were updated              |
+
+## Authentication Methods Comparison
+
+Choose the authentication method that best fits your needs:
+
+| Feature               | Service Account          | OAuth Access Token     | OAuth Refresh Token      |
+| --------------------- | ------------------------ | ---------------------- | ------------------------ |
+| **Setup Complexity**  | Medium                   | Low                    | Medium                   |
+| **Expiration**        | Never                    | ~1 hour                | Never (auto-refreshes)   |
+| **Best for**          | Automation, CI/CD        | Quick testing          | User-specific automation |
+| **GitHub Secrets**    | 1 (JSON)                 | 1 (token)              | 3 (token, ID, secret)    |
+| **User Context**      | Service account email    | User who granted token | User who granted token   |
+| **Sheet Permissions** | Must share with SA email | Uses user's access     | Uses user's access       |
+| **Token Refresh**     | N/A                      | Manual                 | Automatic                |
+| **Recommended for**   | ✅ Production workflows  | ❌ Testing only        | ✅ Personal automation   |
+
+**Quick Recommendation:**
+
+- 🏢 **Team/Organization:** Use **Service Account**
+- 👤 **Personal Projects:** Use **OAuth Refresh Token**
+- 🧪 **Quick Testing:** Use **OAuth Access Token**
 
 ## Setup
 
@@ -117,6 +190,8 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
 
 ### Option 2: OAuth Token Authentication
 
+#### OAuth Access Token (Short-lived)
+
 1. **Obtain an OAuth Access Token**
 
    - Use Google OAuth 2.0 Playground or your own OAuth flow
@@ -126,7 +201,38 @@ A GitHub Action that appends a row to a Google Sheet using the official Google S
    - Name: `GOOGLE_OAUTH_TOKEN`
    - Value: Your OAuth access token
 
-> **Note**: OAuth tokens typically expire after 1 hour. Service Account authentication is recommended for automated workflows.
+> **Note**: OAuth access tokens typically expire after 1 hour. Not recommended for production workflows.
+
+#### OAuth Refresh Token (Long-lived, Recommended)
+
+OAuth refresh tokens don't expire and automatically refresh access tokens when needed.
+
+**📖 See the detailed guide:** [OAUTH_SETUP.md](OAUTH_SETUP.md)
+
+**Quick setup:**
+
+1. **Create OAuth Client Credentials** in Google Cloud Console
+2. **Get a Refresh Token** using OAuth 2.0 Playground or CLI
+3. **Add these secrets to GitHub:**
+
+   - `GOOGLE_OAUTH_REFRESH_TOKEN` - Your refresh token
+   - `GOOGLE_OAUTH_CLIENT_ID` - OAuth client ID
+   - `GOOGLE_OAUTH_CLIENT_SECRET` - OAuth client secret
+   - `SPREADSHEET_ID` - Your spreadsheet ID
+
+4. **Use in workflow:**
+
+```yaml
+- uses: AlbertPuwadol/google-sheet-github-action@v1
+  with:
+    spreadsheet_id: ${{ secrets.SPREADSHEET_ID }}
+    sheet_name: "Sheet1"
+    values: '["data"]'
+    auth_type: "oauth_refresh_token"
+    credentials: ${{ secrets.GOOGLE_OAUTH_REFRESH_TOKEN }}
+    oauth_client_id: ${{ secrets.GOOGLE_OAUTH_CLIENT_ID }}
+    oauth_client_secret: ${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}
+```
 
 ## Examples
 
