@@ -73,7 +73,7 @@ func main() {
 	}
 
 	// Prepare the range
-	rangeNotation := fmt.Sprintf("%s!A:Z", sheetName)
+	rangeNotation := fmt.Sprintf("%s!A38:Z38", sheetName)
 
 	// Prepare the value range
 	valueRange := &sheets.ValueRange{
