@@ -25,6 +25,9 @@ func main() {
 	oauthClientSecret := os.Getenv("INPUT_OAUTH_CLIENT_SECRET")
 
 	// Validate inputs
+	if credentials == "" {
+		log.Fatal("credentials is required")
+	}
 	if spreadsheetID == "" {
 		log.Fatal("spreadsheet_id is required")
 	}
@@ -36,9 +39,6 @@ func main() {
 	}
 	if authType == "" {
 		authType = "service_account" // Default to service account
-	}
-	if credentials == "" {
-		log.Fatal("credentials is required")
 	}
 
 	// Validate OAuth refresh token inputs
