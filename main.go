@@ -72,8 +72,35 @@ func main() {
 		log.Fatalf("Failed to create Sheets service: %v", err)
 	}
 
-	// Prepare the range
-	rangeNotation := fmt.Sprintf("%s!A38:Z38", sheetName)
+	var existingRowCount int
+	var nextRowNumber int
+	var rangeNotation string
+
+	// Read existing data to get current row count
+	log.Println("📖 Reading existing data from sheet...")
+	readRange := fmt.Sprintf("%s!A:Z", sheetName)
+
+	readResp, err := srv.Spreadsheets.Values.Get(spreadsheetID, readRange).Do()
+	if err != nil {
+		log.Printf("⚠️  Warning: Failed to read existing data: %v", err)
+		log.Println("Continuing with standard append...")
+		rangeNotation = fmt.Sprintf("%s!A:Z", sheetName)
+	} else {
+		existingRowCount = len(readResp.Values)
+		nextRowNumber = existingRowCount + 1
+
+		log.Printf("📊 Existing data:")
+		log.Printf("  Total rows: %d", existingRowCount)
+		log.Printf("  Next row number: %d", nextRowNumber)
+
+		if existingRowCount > 0 && len(readResp.Values[0]) > 0 {
+			log.Printf("  Columns in first row: %d", len(readResp.Values[0]))
+		}
+
+		// Use specific range notation based on existing data
+		rangeNotation = fmt.Sprintf("%s!A%d:Z%d", sheetName, nextRowNumber, nextRowNumber)
+		log.Printf("  Appending to: %s", rangeNotation)
+	}
 
 	// Prepare the value range
 	valueRange := &sheets.ValueRange{
@@ -81,6 +108,7 @@ func main() {
 	}
 
 	// Append the row
+	log.Println("📝 Appending row...")
 	resp, err := srv.Spreadsheets.Values.Append(spreadsheetID, rangeNotation, valueRange).
 		ValueInputOption("USER_ENTERED").
 		InsertDataOption("INSERT_ROWS").
